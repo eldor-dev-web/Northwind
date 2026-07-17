@@ -8,6 +8,7 @@ import path from "node:path";
 import { clerkMiddleware } from "@clerk/express";
 import { clerkWebhookHandler } from "./webhooks/clerk";
 import { getEnv } from "./lib/env";
+import keepAliveCron from "./lib/cron";
 
 const env = getEnv();
 const app = express();
@@ -22,28 +23,33 @@ app.use(express.json());
 app.use(cors());
 app.use(clerkMiddleware());
 
+app.get("/health", (_req, res) => { // Bu yerda "healtb"ni "health" qilib to'g'riladim
+    res.json({ ok: true });
+});
+
 const publicDir = path.join(process.cwd(), "public");
 
 if (fs.existsSync(publicDir)) {
     app.use(express.static(publicDir));
 
-    // Marshrut xatosini oldini olish uchun "app.get('*')" o'rniga "app.use" ishlatamiz
     app.use((req, res, next) => {
-        // Faqat GET yoki HEAD so'rovlari uchun ishlaydi
         if (req.method !== "GET" && req.method !== "HEAD") {
             return next();
         }
 
-        // API yoki Webhook yo'llarini o'tkazib yuboramiz
         if (req.path.startsWith("/api") || req.path.startsWith("/webhooks")) {
             return next();
         }
 
-        // Qolgan barcha so'rovlar uchun index.html ni qaytaramiz
         res.sendFile(path.join(publicDir, "index.html"), (err) => {
             if (err) next(err);
         });
     });
+}
+
+// CRON ni server ishga tushguncha start qilamiz
+if (env.NODE_ENV === "production") {
+    keepAliveCron.start();
 }
 
 app.listen(env.PORT, () => console.log("Listening on port:", env.PORT));
