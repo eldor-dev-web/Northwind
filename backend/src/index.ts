@@ -23,15 +23,16 @@ const rawJson = express.raw({ type: "application/json", limit: "1mb" });
 app.post("/webhooks/clerk", rawJson, (req, res) => {
     void clerkWebhookHandler(req, res);
 });
-// app.post("/webhooks/polar", rawJson, (req, res) => {
-// void polarWebhookHandler(req, res);
-//})
+ app.post("/webhooks/polar", rawJson, (req, res) => {
+void polarWebhookHandler(req, res);
+})
 
 app.use(express.json());
 app.use(cors());
 app.use(clerkMiddleware());
+app.use(sentryClerkUserMiddleware());
 
-app.get("/health", (_req, res) => { // Bu yerda "healtb"ni "health" qilib to'g'riladim
+app.get("/health", (_req, res) => { 
     res.json({ ok: true });
 });
 
@@ -64,5 +65,19 @@ if (fs.existsSync(publicDir)) {
 if (env.NODE_ENV === "production") {
     keepAliveCron.start();
 }
+
+//sentry will be  attached to the response object
+Sentry.setupExpressErrorHandler(app);
+
+app.use(
+    (err: unknown, _req:express.Request, res: express.Response,_next: express.NextFunction) => {
+
+    const sentryId = (res as express.Response & { sentry?: string }).sentry;
+
+    res.status(500).json({
+        error: "Internal server error",
+        ...(sentryId !== undefined && { sentryId }),
+    });
+});
 
 app.listen(env.PORT, () => console.log("Listening on port:", env.PORT));
