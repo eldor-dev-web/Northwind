@@ -1,8 +1,9 @@
 import { Router } from "express";
-import { createStremToken } from "../controllers/streamController";
+// Importdagi imlo xatosini to'g'rilaymiz: 'Strem' emas, 'Stream' bo'lishi kerak
+import { createStreamToken } from "../controllers/streamController"; 
 
 const router = Router();
 
-router.post("/token",createStreamToken)
+router.post("/token", createStreamToken);
 
 export default router;

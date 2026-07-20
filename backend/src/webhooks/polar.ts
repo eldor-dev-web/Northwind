@@ -3,7 +3,7 @@ import { getEnv } from "../lib/env.js";
 import { checkoutSessions, orderItems, orders } from "../db/schema.js";
 import { eq } from "drizzle-orm";
 import { db } from "../db/index.js";
-import { Webhook } from "standardwebhoks";
+import { Webhook } from "standardwebhooks";
 
 function headerString(headers: Request["headers"], name: string) {
     const value = headers[name];
@@ -16,6 +16,7 @@ function checkoutSessionIdFromMetadata(order: Record<string, unknown>) {
     const sessionId = (metadata as Record<string, unknown>).checkout_sesion_id;
     return typeof sessionId === "string" ? sessionId : undefined;
 }
+
 async function alreadyPaid(polarOrderId?: string, checkoutId?: string) {
     if (polarOrderId) {
         const [row] = await db
@@ -83,18 +84,18 @@ export async function polarWebhookHandler(req: Request, res: Response) {
 
     try { 
         if (!env.POLAR_WEBHOOK_SECRET) {
-            res.status(503).send("Poalr webhooks not configured");
+            res.status(503).send("Polar webhooks not configured");
             return;
         }
 
-        constraw = req.body instanceof Buffer ? req.body : Buffer.from(String(req.body));
-        const wh = new Webhook(Buffer.from(env>POLAR_WEBHOOK_SECRET, "utf8").toString("base64"));
+        const raw = req.body instanceof Buffer ? req.body : Buffer.from(String(req.body));
+        const wh = new Webhook(Buffer.from(env.POLAR_WEBHOOK_SECRET, "utf8").toString("base64"));
 
-        const id = headerString(req.headers, "wwebhook-id");
+        const id = headerString(req.headers, "webhook-id");
         const ts = headerString(req.headers, "webhook-timestamp");
-        const siq = headerString(req.headers, "webhook-signature");
+        const sig = headerString(req.headers, "webhook-signature");
 
-        if (!id || !ts || sig ) {
+        if (!id || !ts || !sig) {
             res.status(400).json({ error: "Missing webhook headers" });
             return;
         }
@@ -109,10 +110,10 @@ export async function polarWebhookHandler(req: Request, res: Response) {
         if(event.type === "order.paid" && event.data) {
             const data = event.data;
             const polarOrderId = typeof data.id === "string" ? data.id : undefined;
-            const checkotId = typeof data.checkout_id === "string" ? data.checkout_id : undefined;
+            const checkoutId = typeof data.checkout_id === "string" ? data.checkout_id : undefined;
 
-            if(await alreadyPaid(polarOrderId,checkoutId)) {
-                res.json({ok:true, duplicate:true})
+            if(await alreadyPaid(polarOrderId, checkoutId)) {
+                res.json({ ok: true, duplicate: true });
                 return;
             }
 
@@ -143,7 +144,7 @@ export async function polarWebhookHandler(req: Request, res: Response) {
 
         res.json({ ok: true });
     } catch (err) {
-        console.error("Poalr webhook error", err);
+        console.error("Polar webhook error", err);
         res.status(400).json({ error: "invalid webhook" });
     }
 }

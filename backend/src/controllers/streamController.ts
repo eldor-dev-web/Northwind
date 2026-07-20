@@ -11,7 +11,7 @@ export async function createStreamToken(req: Request, res: Response, next: NextF
         const { userId, isAuthenticated } = getAuth(req);
         if (!isAuthenticated || !userId) {
             res.status(401).json({ error: "Unauthorized" });
-            return:
+            return; // Xato: 'return:' o'rniga 'return;' qo'yildi
         }
 
         const localUser = await getLocalUser(userId);
@@ -32,16 +32,16 @@ export async function createStreamToken(req: Request, res: Response, next: NextF
             localUser.email,
         );
 
-        const image = clerkUser.imageurl || undefined;
+        const image = clerkUser.imageUrl || undefined; // Xato: 'imageurl' -> 'imageUrl'
         const sid = streamUserId(userId);
 
-        await server.upsertUser({id:sid,name,image });
+        await server.upsertUser({ id: sid, name, image });
 
         const token = server.createToken(sid);
          
-        res.json({ token, apiKey: env.STREAM_API_KEY, userId: sid })
+        res.json({ token, apiKey: env.STREAM_API_KEY, userId: sid }); // Xato: ';' qo'shildi
 
-        } catch (e) {
-            next(e)
-        }
+    } catch (e) {
+        next(e);
+    }
 }
