@@ -1,13 +1,14 @@
 import { getAuth } from "@clerk/express";
 import type { Request, Response, NextFunction } from "express";
-import { getLocalUser } from "../lib/users.js"; // .js qo'shildi
-import { isAdmin } from "../lib/roles.js";      // .js qo'shildi va nuqta to'g'irlandi (lib./ -> lib/)
+import { getLocalUser } from "../lib/users.js";
+import { isAdmin } from "../lib/roles.js";
 import ImageKit from "@imagekit/nodejs";
-import { getEnv } from "../lib/env.js";         // .js qo'shildi
-import { db } from "../db/index.js";           // .js qo'shildi
-import { products } from "../db/schema.js";     // .js qo'shildi
-import { eq } from "drizzle-orm";              // eq importi qo'shildi (sizda yo'q edi)
+import { getEnv } from "../lib/env.js";
+import { db } from "../db/index.js";
+import { products, orderItems } from "../db/schema.js"; // orderItems qo'shildi
+import { eq, count } from "drizzle-orm"; // count qo'shildi
 import { z } from "zod";
+import { deleteImageKitAsset } from "../lib/imagekit.js"; // Agar kerak bo'lsa
 
 const env = getEnv();
 
@@ -66,14 +67,14 @@ export function getImageKitAuth(_req: Request, res: Response, next: NextFunction
             publicKey: env.IMAGEKIT_PUBLIC_KEY,
             urlEndpoint: env.IMAGEKIT_URL_ENDPOINT 
         });
-        const auth = client.getAuthenticationParameters(); // Metod nomi to'g'irlandi
+        const auth = client.getAuthenticationParameters();
         res.json({ ...auth, publicKey: env.IMAGEKIT_PUBLIC_KEY, urlEndpoint: env.IMAGEKIT_URL_ENDPOINT });
     } catch (e) {
         next(e);
     }
 }
 
-export async function createAdminProducts(req: Request, res: Response, next: NextFunction) { // req qo'shildi
+export async function createAdminProducts(req: Request, res: Response, next: NextFunction) {
     try {
         const parsed = productCreate.safeParse(req.body);
         if (!parsed.success) {
@@ -86,7 +87,7 @@ export async function createAdminProducts(req: Request, res: Response, next: Nex
             imageUrl: imageUrl || null,
             imageKitFileId: imageKitFileId || null,
         }).returning();
-        res.status(201).json({ product: row }); // ; o'rniga : qo'yildi
+        res.status(201).json({ product: row });
     } catch (e) {
         next(e);
     }
@@ -99,12 +100,7 @@ export async function updateAdminProduct(req: Request, res: Response, next: Next
             res.status(400).json({ error: "Invalid body", details: parsed.error.flatten() });
             return;
         }
-        const data = buildProductUpdateSet(parsed.data);
-        if (Object.keys(data).length === 0) {
-            res.status(400).json({ error: "No fields to update" });
-            return;
-        }
-
+        
         const data = buildProductUpdateSet(parsed.data);
 
         if (Object.keys(data).length === 0) {
@@ -113,15 +109,14 @@ export async function updateAdminProduct(req: Request, res: Response, next: Next
         }
 
         const [row] = await db
-        .update(products)
-        .set(data).
-        where(eq(products.id, req.params.id as string))
-        .returning();
+            .update(products)
+            .set(data)
+            .where(eq(products.id, req.params.id as string))
+            .returning();
 
         if (!row) {
             res.status(404).json({ error: "Not found" });
             return;
-
         }
         res.json({ product: row });
     } catch (e) {
@@ -138,29 +133,30 @@ export async function listAdminProducts(_req: Request, res: Response, next: Next
     }
 }
 
-
-export async function deleteAdminProduct(req: Request, res; Response, next: NextFunction) {
+export async function deleteAdminProduct(req: Request, res: Response, next: NextFunction) {
     try {
         const id = req.params.id as string;
         const [existing] = await db.select().from(products).where(eq(products.id, id)).limit(1);
         if (!existing) {
-            res.status(404).josn({ error: "Not found" });
+            res.status(404).json({ error: "Not found" });
             return;
         }
         const [countRow] = await db
-        .select({ c: count() })
-        .from(orderItems)
-        .where(eq(orderItems.productId, id));
+            .select({ c: count() })
+            .from(orderItems)
+            .where(eq(orderItems.productId, id));
 
         if (Number(countRow?.c ?? 0) > 0) {
             res.status(409).json({
-                error:
-                "This product is on one or more orders and cannot be deleted. Deactivate it instead."
+                error: "This product is on one or more orders and cannot be deleted. Deactivate it instead."
             });
             return;
         }
 
-        await deleteImageKitAsset(env, existing.imageKitFileId);
+        if (existing.imageKitFileId) {
+            await deleteImageKitAsset(env, existing.imageKitFileId);
+        }
+        
         await db.delete(products).where(eq(products.id, id));
 
         res.status(204).end();
