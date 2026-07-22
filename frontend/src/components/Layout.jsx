@@ -9,12 +9,9 @@ function Layout({children}) {
 
             <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 md:py-10">{children}</main>
 
-            <div className="w-full">
                 <Footer />
-            </div>
-
         </div>
     )
 }
 
-export default Layout
+export default Layout;

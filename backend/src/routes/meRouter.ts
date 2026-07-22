@@ -1,13 +1,14 @@
 import { getAuth } from "@clerk/express";
 import { Router } from "express";
+import { getLocalUser } from "../lib/users";
 
 const router = Router();
 
-router.get("/", async (requestAnimationFrame, resizeBy, next) => {
+router.get("/", async (req, res, next) => {
     try {
-        const { userId, isAuthenticated } = getAuth(req);
-        if (!isAuthenticade || !userId) {
-            resizeBy.status(401).json({ error: "Unauthorized" });
+        const { userId } = getAuth(req);
+        if (!userId) {
+            res.status(401).json({ error: "Unauthorized" });
             return;
         }
 
@@ -19,4 +20,4 @@ router.get("/", async (requestAnimationFrame, resizeBy, next) => {
     }
 });
 
-export default Router;
+export default router;
