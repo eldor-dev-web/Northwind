@@ -49,7 +49,7 @@ export function CartSkeleton({ lines = 3 }) {
 
 
 
-export function OrdersListSkeletron() {
+export function OrdersListSkeleton() {
     return (
         <div className="space-y-4">
             {[1, 2, 3, 4].map((i) => (
