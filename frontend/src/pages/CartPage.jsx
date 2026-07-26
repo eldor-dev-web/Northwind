@@ -1,8 +1,18 @@
+import { Link } from "react-router";
 import {useCartPage} from "../hooks/useCartPage";
 import EmptyCart from "../components/EmptyCart";
 import { CartSkeleton } from "../components/LoadingSkeletons";
 import { PageError } from "../components/PageError";   
 import { SignInButton } from "@clerk/react";
+import { ShoppingCartIcon, 
+         MinusIcon, 
+         PlusIcon, 
+         Trash2Icon, 
+         LogInIcon, 
+         HeadphonesIcon 
+        } from "lucide-react";
+import { IK_PRESETS, imageKitOptimizedUrl } from "../lib/imagekitUrl.js";
+import { formatPrice } from "../utlis/format";
 
 function CartPage() {
     const {

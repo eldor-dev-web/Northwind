@@ -5,6 +5,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router";
 import HomePage from "./pages/HomePage";
 import CartPage from "./pages/CartPage";
 import OrdersPage from "./pages/OrdersPage";
+import CheckoutReturnPage from "./pages/CheckoutReturnPage";
+import ProductDetailPage from "./pages/ProductDetailPage";
 
 function App() {
     const { isLoaded, isSignedIn  } = useAuth();
@@ -17,11 +19,12 @@ function App() {
                 <Routes>
                     <Route path="/" element={<HomePage />} />
                     <Route path="/cart" element={<CartPage />} />
-                    <Route
+                    <Route path="/products/:slug" element={<ProductDetailPage />} />
+                     <Route
                       path="/orders"
                       element={isSignedIn ? <OrdersPage /> : <Navigate to={"/"} replace />} 
-                      />
-                       <Router path="/checkout/return" element={<CheckoutReturnPage />} />
+                    />
+                    <Route path="/checkout/return" element={<CheckoutReturnPage />} />
                 </Routes>
             </Layout>
         </BrowserRouter>
