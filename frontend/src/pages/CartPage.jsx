@@ -134,7 +134,7 @@ function CartPage() {
                         <show when="signed-in">
                             <button
                             type="button"
-                            onClick={checkoutLoading}
+                            onClick={checkout}
                             aria-busy={checkoutLoading}
                             className="btn btn-primary my-6 w-full gap-2"
                             >

@@ -225,7 +225,7 @@ export async function createVideoInvite(req: Request, res: Response, next: NextF
             name: streamChatDisplayName(localUser.role, localUser.displayName, localUser.email),
           })
 
-          const channelId = `orde-${order.id}`;
+          const channelId = `orders-${order.id}`;
           const channel = server.channel("messaging", channelId, {
             name: `Support · order ${order.id.slice(0, 8)}`,
             created_by_id: customerSid,

@@ -7,7 +7,7 @@ function useOrdersPage() {
 
     const { data, isLoading, error } = useQuery({
         queryKey: ["orders"],
-        queryFn: () => apiFetch("/api/me", { getToken }), 
+        queryFn: () => apiFetch("/api/orders", { getToken }), 
         enabled: isSignedIn,
     }); 
 

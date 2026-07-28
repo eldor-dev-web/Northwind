@@ -39,7 +39,7 @@ export async function createStreamToken(req: Request, res: Response, next: NextF
 
         const token = server.createToken(sid);
          
-        res.json({ token, apiKey: env.STREAM_API_KEY, userId: sid }); // Xato: ';' qo'shildi
+        res.json({ token, apiKey: env.STREAM_API_KEY, userId: sid, name }); // Xato: ';' qo'shildi
 
     } catch (e) {
         next(e);
