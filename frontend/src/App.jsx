@@ -12,6 +12,7 @@ import OrderDetailPage from "./pages/OrderDetailPage";
 import OrderSummaryPage from "./pages/OrderSummaryPage";
 import OrderChatPage from "./pages/OrderChatPage";
 import OrderVideoPage from "./pages/OrderVideoPage";
+import  AdminProductsPage  from "./pages/AdminProductsPage.jsx";
 
 function App() {
     const { isLoaded, isSignedIn  } = useAuth();
@@ -39,6 +40,10 @@ function App() {
                     replace />}
                      />
 
+                     <Route 
+                     path="/orders/:id/call"
+                     element={isSignedIn ? <AdminProductsPage /> : <Navigate to="/" replace /> }
+                         />
                     {/* NESTED ROUTES */}
 
                     <Route path="/orders/:id" element={<OrderDetailPage />} >
