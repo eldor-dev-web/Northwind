@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import {useCartPage} from "../hooks/useCartPage";
+import { useCartPage } from "../hooks/useCartPage";
 import EmptyCart from "../components/EmptyCart";
 import { CartSkeleton } from "../components/LoadingSkeletons";
 import { PageError } from "../components/PageError";   
@@ -42,10 +42,10 @@ function CartPage() {
             ) : (
                 <div className="grid gap-10 lg:grid-cols-[1fr_320px]">
                     <ul className="space-y-4">
-                        {lines.map(({line,product:p}) => (
+                        {lines.map(({line, product: p}) => (
                             <li 
                             key={line.productId}
-                            className="card card-side border border-base-300 bg-base-100 shafdow-sm"
+                            className="card card-side border border-base-300 bg-base-100 shadow-sm"
                             >
                                 <figure className="p-4">
                                     {p?.imageUrl ? (
@@ -130,31 +130,27 @@ function CartPage() {
                             </span>
                         </div>
 
+                        <button
+                        type="button"
+                        onClick={checkout}
+                        aria-busy={checkoutLoading}
+                        className="btn btn-primary my-6 w-full gap-2"
+                        >
+                            {checkoutLoading ? (
+                                <span className="loading loading-spinner loading-sm" aria-hidden />
+                             ) : (
+                                <ShoppingCartIcon className="size-4" aria-hidden />
+                             )}
+                             {checkoutLoading ? "Opening checkout..." : "Checkout securely"}
+                        </button>
 
-                        <show when="signed-in">
-                            <button
-                            type="button"
-                            onClick={checkout}
-                            aria-busy={checkoutLoading}
-                            className="btn btn-primary my-6 w-full gap-2"
-                            >
-                                {checkoutLoading ? (
-                                    <span className="loading loading-spinner loading-sm" aria-hidden />
-                                 ) : (
-                                    <ShoppingCartIcon className="size-4" aria-hidden />
-                                 )}
-                                 {checkoutLoading ? "Opening checkout..." : "Checkout securely"}
+                        <SignInButton mode="modal">
+                            <button type="button" className="btn btn-outline btn-primary mt-2 w-full gap-2">
+                                <LogInIcon className="size-4" aria-hidden />
+                                Sign in to checkout
                             </button>
-                        </show>
+                        </SignInButton>
 
-                        <show when="signed-out">
-                            <SignInButton mode="modal">
-                                <button type="button" className="btn btn-outline btn-primary mt-6 w-full gap-2">
-                                    <LogInIcon className="size-4" aria-hidden />
-                                    Sign in to checkout
-                                </button>
-                                </SignInButton>
-                        </show>
                         <p className="mt-4 flex items-start gap-2 text-xs text-base-content/60">
                         <HeadphonesIcon className="mt-0.5 size-3.5 shrink-0 text-primary" aria-hidden />
                         <span>
@@ -169,4 +165,5 @@ function CartPage() {
         </div>
     );
 }
+
 export default CartPage;
