@@ -17,7 +17,7 @@ import meRouter from "./routes/meRouter.js";
 import streamRouter from "./routes/streamRouter.js";
 import checkoutRouter from "./routes/checkoutRoutes.js";
 import adminRouter from "./routes/adminRouter.js";
-import orderRouter from "./routes/orderRouter";
+import orderRouter from "./routes/orderRouter.js";
 
 import { sentryClerkUserMiddleware } from "./middleware/sentryClerkUser.js";
 
